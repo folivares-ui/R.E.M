@@ -68,7 +68,10 @@ def test_tts_providers(tmp_path):
     assert isinstance(make_tts({}), NoTTS)
     with pytest.raises(ValueError):
         CommandTTS("cat")                                    # falta {out}
-    wav = CommandTTS("sh -c 'cat > {out}'").synthesize("hola")
+    import sys
+    script = tmp_path / "w.py"
+    script.write_text("import sys; open(sys.argv[1], 'wb').write(sys.stdin.buffer.read())")
+    wav = CommandTTS(f'"{sys.executable}" "{script}" "{{out}}"').synthesize("hola")
     assert wav and wav.read_bytes() == b"hola"
     with pytest.raises(ValueError):
         make_tts({"tts_provider": "inventado"})

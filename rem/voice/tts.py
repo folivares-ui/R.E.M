@@ -41,8 +41,10 @@ class CommandTTS:
 
     def synthesize(self, text: str) -> Path | None:
         out = Path(tempfile.mkstemp(suffix=".wav", prefix="rem_tts_")[1])
-        cmd = self.command.replace("{out}", str(out))
-        subprocess.run(shlex.split(cmd), input=text.encode("utf-8"), check=True, timeout=self.timeout)
+        # Dividir PRIMERO y sustituir después: shlex se comería las barras invertidas de rutas de Windows.
+        argv = [a.replace("{out}", str(out)) for a in shlex.split(self.command, posix=(os.name != "nt"))]
+        argv = [a[1:-1] if len(a) > 1 and a[0] == a[-1] and a[0] in "\"'" else a for a in argv]
+        subprocess.run(argv, input=text.encode("utf-8"), check=True, timeout=self.timeout)
         return out if out.exists() and out.stat().st_size > 0 else None
 
 

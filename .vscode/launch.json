@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    { "name": "R.E.M: chat (terminal)", "type": "debugpy", "request": "launch", "module": "rem.cli", "args": ["chat"], "console": "integratedTerminal", "justMyCode": true },
+    { "name": "R.E.M: servidor para AIRI (puerto 8765)", "type": "debugpy", "request": "launch", "module": "rem.cli", "args": ["serve"], "console": "integratedTerminal", "justMyCode": true },
+    { "name": "R.E.M: muestras de voz", "type": "debugpy", "request": "launch", "module": "rem.cli", "args": ["voice", "demo"], "console": "integratedTerminal" },
+    { "name": "R.E.M: leer documento (pide ruta)", "type": "debugpy", "request": "launch", "module": "rem.cli", "args": ["read", "${input:ruta}"], "console": "integratedTerminal" },
+    { "name": "R.E.M: modo en vivo (micrófono + cámara)", "type": "debugpy", "request": "launch", "module": "rem.cli", "args": ["live"], "console": "integratedTerminal" }
+  ],
+  "inputs": [ { "id": "ruta", "type": "promptString", "description": "Ruta del archivo (PDF, Word, Excel, PowerPoint...)" } ]
+}
