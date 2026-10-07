@@ -1,0 +1,47 @@
+# Configuración de R.E.M. Todo lo marcado "(verificar)" depende de tu entorno.
+name: Rem
+wake_names: ["rem", "rem-chan", "rem chan"]   # palabras que la "llaman"
+language: es
+
+models:
+  leader: claude-opus-5-5          # líder: razona y delega
+  worker: claude-sonnet-5-5        # especialistas
+  leader_effort: medium
+  worker_effort: medium
+  fallbacks: true                  # reintento server-side ante rechazos de seguridad (API de Anthropic)
+
+paths:
+  workspace: workspace             # carpeta donde el programador puede escribir
+  data: data                       # rostros inscritos, notas, etc. (no se versiona)
+  documents_root: null             # si se define, read_document solo lee dentro de esta carpeta
+
+mcp_servers:                       # herramientas externas vía MCP (stdio)
+  gods_eye_view:
+    enabled: false                 # actívalo tras `scripts/bootstrap.sh` y `npm run dev` en vendor/gods-eye-view
+    command: node
+    args: ["vendor/gods-eye-view/server/mcp/stdio.js", "--api-base", "http://localhost:5173"]
+    prefix: gev
+  openmausbot:
+    enabled: false                 # requiere la app OpenMausBot en ejecución
+    command: pnpm
+    args: ["--dir", "vendor/OpenMausBot", "mcp"]
+    env:
+      OMB_PORT: "8799"
+      OPENMAUSBOT_TOKEN: ""        # token de emparejamiento; NO lo subas al repositorio
+    prefix: maus
+
+perception:
+  camera_index: 0
+  gestures: true
+  faces: true                      # solo reconoce personas que se inscribieron con su consentimiento
+  wake_by_name: true
+
+voice:
+  stt_model: small                 # modelo faster-whisper (verificar descarga/recursos)
+  tts_provider: none               # none | command  (ver docs/VOZ.md)
+  tts_command: ""                  # p. ej. un comando propio que lea texto por stdin y escriba un WAV
+  reference_wav: null              # SOLO una voz propia o con permiso expreso (ver docs/VOZ.md)
+
+bridge:
+  host: 127.0.0.1
+  port: 8765

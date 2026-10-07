@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rem-avatar"
+version = "0.1.0"
+description = "R.E.M: avatar de IA multiagente (prototipo privado) con Rem de Re:Zero como personalidad."
+requires-python = ">=3.10"
+dependencies = [
+  "anthropic>=1.0",
+  "mcp>=1.0",
+  "pyyaml>=6",
+  "pypdf>=4",
+  "python-docx>=1",
+  "openpyxl>=3.1",
+  "python-pptx>=1",
+  "starlette>=0.37",
+  "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+# Percepción y voz: pesadas, requieren cámara/micrófono (no verificadas en CI/sandbox).
+vision = ["opencv-python>=4.8", "mediapipe>=0.10", "numpy"]
+faces = ["insightface>=0.7", "onnxruntime>=1.17", "numpy"]
+voice = ["faster-whisper>=1.0", "sounddevice>=0.4", "numpy"]
+tts-local = ["piper-tts"]
+project = ["mpxj"]           # lectura de .mpp (Microsoft Project); requiere Java
+dbs = ["sqlalchemy>=2", "duckdb"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+rem = "rem.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["rem*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
