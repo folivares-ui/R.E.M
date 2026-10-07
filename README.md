@@ -72,7 +72,7 @@ y OpenMausBot. Percepción y voz: `docs/PERCEPCION.md`, `docs/VOZ.md`.
 | Cámara, rostros, gestos, micrófono, STT, TTS | ❌ escritos, **no ejecutados** (sin hardware). La lógica pura sí tiene tests |
 | Subtítulos (overlay + SSE) y TTS por API HTTP configurable | ✅ probados con servidor real/local de prueba; ❌ ningún proveedor de voz real probado |
 | Voz: Kokoro-82M (voces predefinidas, español, CPU) | ✅ **síntesis real probada** en CPU, también vía `/v1/audio/speech`; ❌ calidad/parecido a Rem sin evaluar (no puedo escuchar) |
-| Clonación de voces | ⛔ eliminada a petición (ver `docs/VOZ.md`) |
+
 
 ## Pruebas
 ```bash
