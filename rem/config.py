@@ -11,11 +11,18 @@ import yaml
 
 @dataclass
 class ModelConfig:
-    leader: str = "claude-opus-5-5"
-    worker: str = "claude-sonnet-5-5"
-    leader_effort: str = "medium"
-    worker_effort: str = "medium"
-    fallbacks: bool = True
+    # Por defecto: modelos GRATUITOS y locales vía Ollama (ver docs/MODELOS.md). `anthropic` es opcional y de pago.
+    provider: str = "ollama"            # ollama | openai_compat | anthropic
+    leader: str = "qwen3:8b"
+    worker: str = "qwen3:8b"
+    base_url: str = "http://127.0.0.1:11434/v1"
+    api_key_env: str = ""               # NOMBRE de la variable con la clave (solo servicios en la nube)
+    temperature: float = 0.3
+    timeout: int = 900
+    max_tokens: int = 4096
+    leader_effort: str = "medium"       # solo proveedor anthropic
+    worker_effort: str = "medium"       # solo proveedor anthropic
+    fallbacks: bool = False             # solo proveedor anthropic
 
 
 @dataclass

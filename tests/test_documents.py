@@ -74,12 +74,6 @@ def test_sqlite_is_opened_read_only(tmp_path):
     assert run_query(f"sqlite:///{db}", "select count(*) from v")["rows"] == [[0]]
 
 
-def test_doe_extension_asks_for_clarification(tmp_path):
-    p = tmp_path / "a.doe"; p.write_text("hola")
-    with pytest.raises(DocumentError, match="doc"):
-        read_document(str(p))
-
-
 def test_root_confinement(tmp_path):
     inside = tmp_path / "ok"; inside.mkdir(); (inside / "a.txt").write_text("hi")
     (tmp_path / "secret.txt").write_text("no")

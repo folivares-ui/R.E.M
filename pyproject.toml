@@ -26,6 +26,7 @@ faces = ["insightface>=0.7", "onnxruntime>=1.17", "numpy"]
 voice = ["faster-whisper>=1.0", "sounddevice>=0.4", "numpy"]
 tts-local = ["piper-tts"]
 project = ["mpxj"]           # lectura de .mpp (Microsoft Project); requiere Java
+web = ["ddgs"]
 dbs = ["sqlalchemy>=2", "duckdb"]
 dev = ["pytest>=8", "pytest-asyncio>=0.23", "fastapi", "python-multipart"]
 

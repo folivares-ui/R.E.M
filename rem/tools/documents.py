@@ -3,7 +3,6 @@
 Principios:
 - Nada se trunca en silencio: la salida indica `offset`, `total_chars` y si hay más.
 - Los formatos antiguos (.doc/.xls/.ppt) se convierten con LibreOffice si está instalado.
-- `.doe` NO es un formato que yo pueda identificar con certeza: se informa y se pide aclaración.
 """
 from __future__ import annotations
 
@@ -201,8 +200,6 @@ def extract_text(p: Path) -> str:
         return _sqlite_summary(p)
     if ext in TEXT_EXT or ext == "":
         return p.read_text(encoding="utf-8", errors="replace")
-    if ext == ".doe":
-        raise DocumentError("No reconozco la extensión .doe. ¿Quisiste decir .doc o .docx? Indícame el formato real.")
     # Último recurso: ¿es texto?
     raw = p.read_bytes()[:4096]
     if b"\x00" not in raw:

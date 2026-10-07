@@ -121,7 +121,11 @@ async def run_agent(
 
         async def _run(use: dict[str, Any]) -> dict[str, Any]:
             called.append(use["name"])
-            out, is_err = await registry.call(use["name"], use.get("input") or {})
+            inp = use.get("input") or {}
+            if "_invalid_arguments" in inp:  # modelo pequeño que devolvió JSON roto
+                out, is_err = "Los argumentos no eran JSON válido; vuelve a llamar a la herramienta con JSON correcto.", True
+            else:
+                out, is_err = await registry.call(use["name"], inp)
             res: dict[str, Any] = {"type": "tool_result", "tool_use_id": use["id"], "content": out}
             if is_err:
                 res["is_error"] = True

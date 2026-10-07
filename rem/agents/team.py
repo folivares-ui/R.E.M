@@ -10,6 +10,7 @@ from ..persona import REM_PERSONA
 from ..tools.database import make_database_tools
 from ..tools.documents import make_document_tools
 from ..tools.registry import Tool, ToolRegistry
+from ..tools.web import make_web_tools
 from ..tools.workspace import make_workspace_tools
 from .specialists import SPECIALISTS, SpecialistSpec
 
@@ -22,7 +23,7 @@ class Team:
         self.backend = backend
         root = cfg.resolve(cfg.documents_root) if cfg.documents_root else None
         self._local = ToolRegistry()
-        for t in (*make_document_tools(root), *make_database_tools(), *make_workspace_tools(cfg.resolve(cfg.workspace))):
+        for t in (*make_document_tools(root), *make_database_tools(), *make_web_tools(), *make_workspace_tools(cfg.resolve(cfg.workspace))):
             self._local.add(t)
         self._extra = extra_leader_tools or ToolRegistry()
         self.history: list[dict[str, Any]] = []
@@ -47,7 +48,7 @@ class Team:
             system=spec.system,
             messages=[{"role": "user", "content": prompt}],
             tools=self._registry_for(spec),
-            server_tools=list(spec.server_tools),
+            server_tools=list(spec.server_tools) if getattr(self.backend, "supports_server_tools", True) else [],
             effort=spec.effort or self.cfg.models.worker_effort,
         )
         return res.text or "(el especialista no devolvió texto)"
@@ -76,7 +77,7 @@ class Team:
 
     def leader_tools(self) -> ToolRegistry:
         reg = ToolRegistry([self._delegate_tool()])
-        for name in ("leer_documento", "consultar_base_de_datos"):
+        for name in ("leer_documento", "consultar_base_de_datos", "buscar_web", "wikipedia"):
             reg.add(self._local._tools[name])
         reg.extend(self._extra)
         return reg
