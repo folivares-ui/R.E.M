@@ -1,0 +1,62 @@
+# Configuración de R.E.M. Todo lo marcado "(verificar)" depende de tu entorno.
+name: Rem
+wake_names: ["rem", "rem-chan", "rem chan"]   # palabras que la "llaman"
+language: es
+
+models:
+  # Modelos GRATUITOS por defecto (local con Ollama). Detalles, requisitos y alternativas: docs/MODELOS.md
+  provider: ollama                 # ollama | openai_compat | anthropic (de pago, opcional)
+  leader: "qwen3:8b"               # Rem (líder). Con más memoria: qwen3:14b / gpt-oss:20b (ver docs/MODELOS.md)
+  worker: "qwen3:4b"               # especialistas (equipo de 16 GB de RAM sin GPU; ver docs/MODELOS.md)
+  max_parallel: 1                  # en CPU, una delegación a la vez
+  base_url: "http://127.0.0.1:11434/v1"
+  api_key_env: ""                  # solo para servicios en la nube: NOMBRE de la variable de entorno con la clave
+  temperature: 0.3
+  max_tokens: 4096
+
+paths:
+  workspace: workspace             # carpeta donde el programador puede escribir
+  data: data                       # rostros inscritos, notas, etc. (no se versiona)
+  documents_root: null             # si se define, read_document solo lee dentro de esta carpeta
+
+mcp_servers:                       # herramientas externas vía MCP (stdio)
+  gods_eye_view:
+    enabled: false                 # actívalo tras `scripts/bootstrap.sh` y `npm run dev` en vendor/gods-eye-view
+    command: node
+    args: ["vendor/gods-eye-view/server/mcp/stdio.js", "--api-base", "http://localhost:5173"]
+    prefix: gev
+  openmausbot:
+    enabled: false                 # requiere la app OpenMausBot en ejecución
+    command: pnpm
+    args: ["--dir", "vendor/OpenMausBot", "mcp"]
+    env:
+      OMB_PORT: "8799"
+      OPENMAUSBOT_TOKEN: ""        # token de emparejamiento; NO lo subas al repositorio
+    prefix: maus
+
+perception:
+  camera_index: 0
+  gestures: true
+  faces: true                      # solo reconoce personas que se inscribieron con su consentimiento
+  wake_by_name: true
+
+voice:
+  stt_model: base                  # faster-whisper: base (rápido en CPU) | small (más preciso, más lento)
+  tts_provider: kokoro             # kokoro | none | command | http   (ver docs/VOZ.md). SIN clonación de voces.
+  # --- Kokoro-82M local (CPU). Descarga: python scripts/download_kokoro.py ---
+  kokoro_model: models/kokoro-v1.0.int8.onnx
+  kokoro_voices: models/voices-v1.0.bin
+  kokoro_voice: ef_dora            # ef_dora (femenina) | em_alex | em_santa (masculinas); `rem voice demo` genera muestras
+  kokoro_speed: 1.0
+  kokoro_lang: es
+  # --- otros proveedores (opcionales) ---
+  tts_command: ""                  # command: lee texto por stdin y escribe un WAV en {out}
+  tts_url: ""                      # http: POST JSON {model,input,voice,response_format} -> audio
+  tts_api_key_env: REM_TTS_API_KEY # NOMBRE de la variable de entorno con la clave (nunca la clave aquí)
+  tts_model: ""
+  tts_voice: ""
+  tts_format: wav
+
+bridge:
+  host: 127.0.0.1
+  port: 8765

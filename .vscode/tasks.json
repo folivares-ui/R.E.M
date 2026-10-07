@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "1. Crear entorno e instalar", "type": "shell", "command": "python -m venv .venv; .\\.venv\\Scripts\\python.exe -m pip install -e \".[dev,web,tts-kokoro]\"", "problemMatcher": [] },
+    { "label": "2. Descargar voz Kokoro", "type": "shell", "command": ".\\.venv\\Scripts\\python.exe scripts\\download_kokoro.py", "problemMatcher": [] },
+    { "label": "3. Descargar modelos Ollama", "type": "shell", "command": "ollama pull qwen3:8b; ollama pull qwen3:4b", "problemMatcher": [] },
+    { "label": "Pruebas (pytest)", "type": "shell", "command": ".\\.venv\\Scripts\\python.exe -m pytest -q", "group": "test", "problemMatcher": [] },
+    { "label": "Servidor para AIRI", "type": "shell", "command": ".\\.venv\\Scripts\\python.exe -m rem.cli serve", "isBackground": true, "problemMatcher": [] }
+  ]
+}
