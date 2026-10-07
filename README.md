@@ -68,9 +68,10 @@ y OpenMausBot. Percepción y voz: `docs/PERCEPCION.md`, `docs/VOZ.md`.
 | Conexión AIRI ↔ R.E.M en la interfaz de AIRI | ❌ no probada (no se levantó AIRI). Los nombres exactos de campos de su UI deben comprobarse |
 | OpenMausBot MCP | ❌ no ejecutado (requiere su app/harness y emparejamiento; ver su `docs/mcp-server.md`) |
 | Cámara, rostros, gestos, micrófono, STT, TTS | ❌ escritos, **no ejecutados** (sin hardware). La lógica pura sí tiene tests |
+| Subtítulos (overlay + SSE) y TTS por API HTTP configurable | ✅ probados con servidor real/local de prueba; ❌ ningún proveedor de voz real probado |
 | Voz de Rem | ⛔ no clonada (ver `docs/VOZ.md`) |
 
 ## Pruebas
 ```bash
-pytest -q        # 45 pruebas
+pytest -q        # 49 pruebas
 ```

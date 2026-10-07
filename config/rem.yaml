@@ -38,7 +38,13 @@ perception:
 
 voice:
   stt_model: small                 # modelo faster-whisper (verificar descarga/recursos)
-  tts_provider: none               # none | command  (ver docs/VOZ.md)
+  tts_provider: none               # none | command | http   (ver docs/VOZ.md)
+  # --- proveedor `http`: tu API de voz (formato POST JSON {model,input,voice,response_format} -> audio) ---
+  tts_url: ""                      # p. ej. https://tu-servicio/v1/audio/speech  (TÚ eliges el proveedor)
+  tts_api_key_env: REM_TTS_API_KEY # NOMBRE de la variable de entorno con la clave (nunca la clave aquí)
+  tts_model: ""
+  tts_voice: ""
+  tts_format: wav
   tts_command: ""                  # p. ej. un comando propio que lea texto por stdin y escriba un WAV
   reference_wav: null              # SOLO una voz propia o con permiso expreso (ver docs/VOZ.md)
 

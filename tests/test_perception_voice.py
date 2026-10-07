@@ -77,3 +77,31 @@ def test_tts_providers(tmp_path):
 def test_strip_stage_tokens():
     s = 'Hola <|ACT {"emotion":{"name":"happy","intensity":1}}|>mundo<|DELAY:1|>'
     assert strip_stage_tokens(s) == "Hola mundo"
+
+
+def test_http_tts_posts_json_with_bearer_key(monkeypatch):
+    import json, threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    from rem.voice.tts import HttpTTS
+    seen = {}
+
+    class H(BaseHTTPRequestHandler):
+        def do_POST(self):
+            seen["auth"] = self.headers.get("Authorization")
+            seen["body"] = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            self.send_response(200); self.send_header("Content-Type", "audio/wav"); self.end_headers(); self.wfile.write(b"RIFFfake")
+        def log_message(self, *a): pass
+
+    srv = HTTPServer(("127.0.0.1", 0), H); threading.Thread(target=srv.serve_forever, daemon=True).start()
+    monkeypatch.setenv("MI_CLAVE", "abc")
+    try:
+        t = make_tts({"tts_provider": "http", "tts_url": f"http://127.0.0.1:{srv.server_port}/v1/audio/speech",
+                      "tts_api_key_env": "MI_CLAVE", "tts_model": "m", "tts_voice": "v"})
+        assert isinstance(t, HttpTTS)
+        out = t.synthesize("hola")
+    finally:
+        srv.shutdown()
+    assert out.read_bytes() == b"RIFFfake" and seen["auth"] == "Bearer abc"
+    assert seen["body"] == {"input": "hola", "response_format": "wav", "model": "m", "voice": "v"}
+    with pytest.raises(ValueError):
+        HttpTTS("ftp://x")

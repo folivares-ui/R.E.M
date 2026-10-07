@@ -5,7 +5,8 @@ En AIRI: Ajustes -> Proveedores -> OpenAI-compatible, base URL `http://127.0.0.1
 AIRI sigue ocupándose de cuerpo, voz y animación; R.E.M. decide qué responder y a quién delegar.
 
 Endpoints: GET /health, GET /v1/models, POST /v1/chat/completions (stream y no stream),
-POST /events (eventos de percepción), POST /v1/audio/speech (si hay TTS configurado).
+POST /events (eventos de percepción), POST /v1/audio/speech (si hay TTS configurado),
+GET /subtitles (overlay), /subtitles/stream (SSE), /subtitles/last.
 """
 from __future__ import annotations
 
@@ -18,11 +19,12 @@ from typing import Any
 
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response, StreamingResponse
+from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 from starlette.routing import Route
 
 from ..agents.team import Team
-from ..stage import STAGE_ADDENDUM
+from ..stage import STAGE_ADDENDUM, strip_stage_tokens
+from .subtitles import OVERLAY_HTML, SubtitleHub
 from ..voice.tts import NoTTS, TTSProvider
 
 EVENT_TTL_S = 300
@@ -87,8 +89,10 @@ def _chunk(cid: str, model: str, delta: dict[str, Any], finish: str | None = Non
     return f"data: {json.dumps(obj, ensure_ascii=False)}\n\n"
 
 
-def build_app(team: Team, tts: TTSProvider | None = None, perception: PerceptionBuffer | None = None) -> Starlette:
+def build_app(team: Team, tts: TTSProvider | None = None, perception: PerceptionBuffer | None = None,
+              subtitles: SubtitleHub | None = None) -> Starlette:
     tts = tts or NoTTS()
+    subtitles = subtitles or SubtitleHub()
     perception = perception or PerceptionBuffer()
     token = os.environ.get("REM_BRIDGE_TOKEN")
 
@@ -115,6 +119,7 @@ def build_app(team: Team, tts: TTSProvider | None = None, perception: Perception
         try:
             res = await team.chat(last, source="voz", history=hist, system_extra=extra)
             text = res.text
+            subtitles.publish(strip_stage_tokens(text))
         except Exception as exc:  # noqa: BLE001
             return JSONResponse({"error": {"message": f"{type(exc).__name__}: {exc}", "type": "server_error"}}, status_code=502)
         cid, model = f"chatcmpl-{uuid.uuid4().hex[:24]}", "rem"
@@ -147,7 +152,20 @@ def build_app(team: Team, tts: TTSProvider | None = None, perception: Perception
             return JSONResponse({"error": {"message": "TTS no configurado (voice.tts_provider: none)"}}, status_code=501)
         return Response(path.read_bytes(), media_type="audio/wav")
 
+    async def sub_overlay(_: Request) -> Response:
+        return HTMLResponse(OVERLAY_HTML)
+
+    async def sub_stream(request: Request) -> Response:
+        if unauthorized(request):
+            return JSONResponse({"error": {"message": "unauthorized"}}, status_code=401)
+        return StreamingResponse(subtitles.sse(request.is_disconnected), media_type="text/event-stream",
+                                 headers={"Cache-Control": "no-cache"})
+
+    async def sub_last(_: Request) -> Response:
+        return JSONResponse([{"text": c.text, "start": c.start, "duration": c.duration} for c in subtitles.last])
+
     return Starlette(routes=[
+        Route("/subtitles", sub_overlay), Route("/subtitles/stream", sub_stream), Route("/subtitles/last", sub_last),
         Route("/health", health), Route("/v1/models", models),
         Route("/v1/chat/completions", chat, methods=["POST"]),
         Route("/events", events, methods=["POST"]), Route("/v1/audio/speech", speech, methods=["POST"]),
