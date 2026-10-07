@@ -7,7 +7,8 @@ models:
   # Modelos GRATUITOS por defecto (local con Ollama). Detalles, requisitos y alternativas: docs/MODELOS.md
   provider: ollama                 # ollama | openai_compat | anthropic (de pago, opcional)
   leader: "qwen3:8b"               # Rem (líder). Con más memoria: qwen3:14b / gpt-oss:20b (ver docs/MODELOS.md)
-  worker: "qwen3:8b"               # especialistas
+  worker: "qwen3:4b"               # especialistas (equipo de 16 GB de RAM sin GPU; ver docs/MODELOS.md)
+  max_parallel: 1                  # en CPU, una delegación a la vez
   base_url: "http://127.0.0.1:11434/v1"
   api_key_env: ""                  # solo para servicios en la nube: NOMBRE de la variable de entorno con la clave
   temperature: 0.3
@@ -40,21 +41,21 @@ perception:
   wake_by_name: true
 
 voice:
-  stt_model: small                 # modelo faster-whisper (verificar descarga/recursos)
-  tts_provider: none               # none | clonar_voz | command | http   (ver docs/VOZ.md)
-  # --- proveedor `clonar_voz`: servidor local Clonar-voz (ver docs/VOZ.md) ---
-  clonar_voz_url: http://127.0.0.1:8080
-  clonar_voz_voice_id: ""          # id de la voz en su biblioteca (rem voice register ...)
-  clonar_voz_language: es
-  clonar_voz_device: auto          # auto | cpu | id de GPU
-  # --- proveedor `http`: tu API de voz (formato POST JSON {model,input,voice,response_format} -> audio) ---
-  tts_url: ""                      # p. ej. https://tu-servicio/v1/audio/speech  (TÚ eliges el proveedor)
+  stt_model: base                  # faster-whisper: base (rápido en CPU) | small (más preciso, más lento)
+  tts_provider: kokoro             # kokoro | none | command | http   (ver docs/VOZ.md). SIN clonación de voces.
+  # --- Kokoro-82M local (CPU). Descarga: python scripts/download_kokoro.py ---
+  kokoro_model: models/kokoro-v1.0.int8.onnx
+  kokoro_voices: models/voices-v1.0.bin
+  kokoro_voice: ef_dora            # ef_dora (femenina) | em_alex | em_santa (masculinas); `rem voice demo` genera muestras
+  kokoro_speed: 1.0
+  kokoro_lang: es
+  # --- otros proveedores (opcionales) ---
+  tts_command: ""                  # command: lee texto por stdin y escribe un WAV en {out}
+  tts_url: ""                      # http: POST JSON {model,input,voice,response_format} -> audio
   tts_api_key_env: REM_TTS_API_KEY # NOMBRE de la variable de entorno con la clave (nunca la clave aquí)
   tts_model: ""
   tts_voice: ""
   tts_format: wav
-  tts_command: ""                  # p. ej. un comando propio que lea texto por stdin y escriba un WAV
-  reference_wav: null              # SOLO una voz propia o con permiso expreso (ver docs/VOZ.md)
 
 bridge:
   host: 127.0.0.1

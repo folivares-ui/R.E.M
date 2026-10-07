@@ -1,6 +1,7 @@
 """Rem (líder) + especialistas: orquestación con delegación en paralelo."""
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -26,6 +27,7 @@ class Team:
         for t in (*make_document_tools(root), *make_database_tools(), *make_web_tools(), *make_workspace_tools(cfg.resolve(cfg.workspace))):
             self._local.add(t)
         self._extra = extra_leader_tools or ToolRegistry()
+        self._sem = asyncio.Semaphore(max(1, cfg.models.max_parallel))  # CPU sin GPU: 1 modelo a la vez
         self.history: list[dict[str, Any]] = []
         self.delegations: list[tuple[str, str]] = []  # bitácora (agente, tarea) para auditoría/pruebas
 
@@ -42,15 +44,16 @@ class Team:
             raise ValueError(f"Especialista desconocido: {agent_id}. Opciones: {', '.join(SPECIALISTS)}")
         self.delegations.append((agent_id, task))
         prompt = task if not context else f"Contexto:\n{context}\n\nTarea:\n{task}"
-        res = await run_agent(
-            self.backend,
-            model=self.cfg.models.worker,
-            system=spec.system,
-            messages=[{"role": "user", "content": prompt}],
-            tools=self._registry_for(spec),
-            server_tools=list(spec.server_tools) if getattr(self.backend, "supports_server_tools", True) else [],
-            effort=spec.effort or self.cfg.models.worker_effort,
-        )
+        async with self._sem:
+            res = await run_agent(
+                self.backend,
+                model=self.cfg.models.worker,
+                system=spec.system,
+                messages=[{"role": "user", "content": prompt}],
+                tools=self._registry_for(spec),
+                server_tools=list(spec.server_tools) if getattr(self.backend, "supports_server_tools", True) else [],
+                effort=spec.effort or self.cfg.models.worker_effort,
+            )
         return res.text or "(el especialista no devolvió texto)"
 
     # --- líder -----------------------------------------------------------------------------

@@ -7,6 +7,7 @@ data/
 workspace/
 .env
 node_modules/
-# Material con derechos de terceros / datos biométricos: nunca al repositorio
-assets/voice_reference/
-assets/*.mp3
+# Pesos de modelos y audios generados: no van al repositorio
+models/
+*.wav
+*.mp3

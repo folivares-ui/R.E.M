@@ -7,12 +7,22 @@
 > la información viene de blogs y buscadores (fuentes secundarias, algunas con estilo SEO) y puede estar desactualizada. Los nombres de modelo y las cifras
 > hay que **verificarlos en ollama.com/library** y con `ollama show <modelo>` antes de descargar varios GB. Hoy es 2026-10-07: este mercado cambia rápido.
 
+## Tu equipo: 16 GB de RAM (15,6 utilizables) y 128 MB de VRAM
+Sin GPU útil, todo corre en **CPU**. Consecuencias (las cifras de memoria vienen de las fuentes secundarias de abajo; **la velocidad no la medí**: depende de tu CPU):
+- ✅ `qwen3:8b` (~5-6 GB) cabe con holgura: **Rem (líder)**. Esperable: respuestas lentas (del orden de pocos tokens por segundo en CPU; estimación mía, sin medir).
+- ✅ `qwen3:4b` (~2,5-3 GB): **especialistas**, para que cada delegación no tarde minutos. Verifica la etiqueta con `ollama show qwen3:4b`.
+- ❌ `gpt-oss:20b` (16 GB) y `qwen3:30b-a3b` (~19 GB): **no caben** con el sistema, el navegador de AIRI y la voz abiertos.
+- Recursos simultáneos aproximados: líder 8B ~6 GB + especialista 4B ~3 GB + Kokoro ~0,3 GB + Whisper `base` ~0,5 GB + AIRI/navegador + Windows: **justo pero viable**.
+  Por eso `max_parallel: 1` (una delegación a la vez) y que Ollama no mantenga varios modelos cargados a la vez (comprueba su documentación vigente sobre cuántos modelos mantiene en memoria).
+- Si es demasiado lento: usa `qwen3:4b` también para el líder, o la capa gratuita en la nube (con las salvedades de privacidad de más abajo), o dale a Rem solo tareas cortas.
+- Windows: Ollama para Windows existe; no lo probé aquí.
+
 ## Recomendación (local, $0, tus datos no salen del equipo)
 Criterios: llamadas a herramientas nativas (los agentes dependen de ellas), español, licencia permisiva y que quepa en hardware doméstico.
 
 | Rol / hardware | Modelo (etiqueta de Ollama) | Por qué (según las fuentes) |
 |---|---|---|
-| **Por defecto**, ~6-8 GB de VRAM/RAM | `qwen3:8b` | Qwen3: licencia Apache 2.0, 100+ idiomas (incluye español), llamadas a herramientas nativas en todos los tamaños. ~6 GB a Q4 según una fuente. Un blog lo estima en ~85 % de fiabilidad de tool-calling (dato no contrastado). |
+| **Rem (líder) en tu equipo**, ~6-8 GB de RAM | `qwen3:8b` | Qwen3: licencia Apache 2.0, 100+ idiomas (incluye español), llamadas a herramientas nativas en todos los tamaños. ~6 GB a Q4 según una fuente. Un blog lo estima en ~85 % de fiabilidad de tool-calling (dato no contrastado). |
 | ~8-12 GB | `qwen3:14b` | Mismo modelo, más capaz (~7,7 GB a Q4_K_M según una fuente; verifícalo). Buen candidato para **Rem (líder)** mientras los especialistas usan `qwen3:8b`. |
 | ~16 GB | `gpt-oss:20b` | OpenAI, Apache 2.0, razonamiento y llamadas a funciones nativas; "cabe en 16 GB" gracias a MXFP4 (varias fuentes concuerdan). |
 | ~19 GB+ | `qwen3:30b-a3b` | MoE: ~3B activos pero hay que cargar los 30B (~19 GB a Q4_K_M según una fuente); suele ir rápido. |
@@ -24,7 +34,7 @@ Otros mencionados por las fuentes (no probados): `mistral-small3.2:24b`, `llama3
 ```bash
 ollama pull qwen3:8b          # instala Ollama desde su web oficial
 ```
-`config/rem.yaml` ya apunta a `http://127.0.0.1:11434/v1` con `qwen3:8b`. Para un líder más fuerte: `leader: "qwen3:14b"`.
+`config/rem.yaml` ya apunta a `http://127.0.0.1:11434/v1` con líder `qwen3:8b` y especialistas `qwen3:4b`. Con 16 GB de RAM sin GPU, `qwen3:14b` es posible pero lento: pruébalo antes.
 
 **Avisos honestos**
 - Los modelos pequeños son **menos fiables** que los de frontera para orquestar varios agentes y herramientas: pueden elegir mal la herramienta, devolver JSON
@@ -32,7 +42,6 @@ ollama pull qwen3:8b          # instala Ollama desde su web oficial
 - **Contexto:** leer PDFs largos exige una ventana de contexto grande en el servidor de modelos; si es corta se pierde texto. Revisa en la documentación vigente de Ollama
   cómo fijarla (no la configuro por ti).
 - `qwen3` puede emitir su razonamiento entre `<think>…</think>`: R.E.M lo elimina antes de mostrar/hablar.
-- Hardware: no sé qué equipo tienes; **dime tu RAM/VRAM y elijo el tamaño**.
 
 ## Búsqueda web sin pago
 La búsqueda de servidor de Anthropic no existe con modelos gratuitos. La sustituyen herramientas locales: `buscar_web` (DuckDuckGo vía el paquete `ddgs`,

@@ -14,7 +14,7 @@ pip install -e '.[vision,faces,voice]'
   `perception.gesture_model` en `config/rem.yaml` a ese archivo.
 - Rostros: InsightFace (`buffalo_l`). **Revisa la licencia de los modelos preentrenados**
   (no estoy seguro de que permita más que uso de investigación/no comercial).
-- Voz a texto: faster-whisper (el modelo se descarga la primera vez).
+- Voz a texto: faster-whisper (el modelo se descarga la primera vez). Sin GPU usa el modelo `base` (configurado) por velocidad; `small` es más preciso pero más lento (no medido).
 
 ## Privacidad (diseño)
 - Solo se reconoce a personas **inscritas con consentimiento**:

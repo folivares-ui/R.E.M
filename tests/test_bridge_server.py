@@ -70,3 +70,19 @@ def test_bad_request_and_auth(tmp_path, monkeypatch):
 def test_speech_501_without_tts(tmp_path):
     c, _, _ = make(tmp_path)
     assert c.post("/v1/audio/speech", json={"input": "hola"}).status_code == 501
+
+
+def test_speech_endpoint_passes_voice_and_returns_wav(tmp_path):
+    from pathlib import Path
+    calls = []
+
+    class FakeTTS:
+        def synthesize(self, text, voice=None):
+            calls.append((text, voice))
+            p = tmp_path / "o.wav"; p.write_bytes(b"RIFFfake"); return p
+
+    be = FakeBackend(lambda kw: resp([text_block("x")], "end_turn"))
+    c = TestClient(build_app(Team(Config(workspace=tmp_path / "w", base_dir=tmp_path), be), tts=FakeTTS()))
+    r = c.post("/v1/audio/speech", json={"input": "hola", "voice": "em_alex", "model": "kokoro"})
+    assert r.status_code == 200 and r.content == b"RIFFfake" and r.headers["content-type"] == "audio/wav"
+    assert calls == [("hola", "em_alex")]

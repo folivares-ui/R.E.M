@@ -14,7 +14,8 @@ class ModelConfig:
     # Por defecto: modelos GRATUITOS y locales vía Ollama (ver docs/MODELOS.md). `anthropic` es opcional y de pago.
     provider: str = "ollama"            # ollama | openai_compat | anthropic
     leader: str = "qwen3:8b"
-    worker: str = "qwen3:8b"
+    worker: str = "qwen3:4b"         # equipo sin GPU (16 GB de RAM): especialistas más ligeros
+    max_parallel: int = 1               # delegaciones simultáneas; en CPU subirlo no acelera, solo compite por RAM/CPU
     base_url: str = "http://127.0.0.1:11434/v1"
     api_key_env: str = ""               # NOMBRE de la variable con la clave (solo servicios en la nube)
     temperature: float = 0.3
