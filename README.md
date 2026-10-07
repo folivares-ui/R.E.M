@@ -69,9 +69,10 @@ y OpenMausBot. Percepción y voz: `docs/PERCEPCION.md`, `docs/VOZ.md`.
 | OpenMausBot MCP | ❌ no ejecutado (requiere su app/harness y emparejamiento; ver su `docs/mcp-server.md`) |
 | Cámara, rostros, gestos, micrófono, STT, TTS | ❌ escritos, **no ejecutados** (sin hardware). La lógica pura sí tiene tests |
 | Subtítulos (overlay + SSE) y TTS por API HTTP configurable | ✅ probados con servidor real/local de prueba; ❌ ningún proveedor de voz real probado |
+| Clonar-voz como motor de voz (`tts_provider: clonar_voz`) | ✅ contrato HTTP contra su `app.py` real con `llama-tts` falso; ❌ modelo Qwen3-TTS real no probado |
 | Voz de Rem | ⛔ no clonada (ver `docs/VOZ.md`) |
 
 ## Pruebas
 ```bash
-pytest -q        # 49 pruebas
+pytest -q        # 53 pruebas
 ```

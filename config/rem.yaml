@@ -38,7 +38,12 @@ perception:
 
 voice:
   stt_model: small                 # modelo faster-whisper (verificar descarga/recursos)
-  tts_provider: none               # none | command | http   (ver docs/VOZ.md)
+  tts_provider: none               # none | clonar_voz | command | http   (ver docs/VOZ.md)
+  # --- proveedor `clonar_voz`: servidor local Clonar-voz (ver docs/VOZ.md) ---
+  clonar_voz_url: http://127.0.0.1:8080
+  clonar_voz_voice_id: ""          # id de la voz en su biblioteca (rem voice register ...)
+  clonar_voz_language: es
+  clonar_voz_device: auto          # auto | cpu | id de GPU
   # --- proveedor `http`: tu API de voz (formato POST JSON {model,input,voice,response_format} -> audio) ---
   tts_url: ""                      # p. ej. https://tu-servicio/v1/audio/speech  (TÚ eliges el proveedor)
   tts_api_key_env: REM_TTS_API_KEY # NOMBRE de la variable de entorno con la clave (nunca la clave aquí)

@@ -16,6 +16,7 @@ fetch() { # nombre url sha
 GIT_LFS_SKIP_SMUDGE=1 fetch airi             https://github.com/moeru-ai/airi                     60d73ccd52ccf29e1528a98eb4428606f4051577
 GIT_LFS_SKIP_SMUDGE=1 fetch gods-eye-view    https://github.com/bilawalsidhu/gods-eye-view        e685449a52550775a5279cef1b9090ef24d507a2
 GIT_LFS_SKIP_SMUDGE=1 fetch OpenMausBot      https://github.com/milind-soni/OpenMausBot           37b059690d88ad27ef8faed327d3e0e373ca0a36
+GIT_LFS_SKIP_SMUDGE=1 fetch Clonar-voz       https://github.com/jceronch1/Clonar-voz              2f205a2cd42af609f3c0cbe38b36493b16b99278
 
 cat <<'MSG'
 

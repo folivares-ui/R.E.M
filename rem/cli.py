@@ -81,6 +81,37 @@ def _faces(args: argparse.Namespace) -> None:
         print(f"Inscrito: {args.name}")
 
 
+def _voice(args: argparse.Namespace) -> None:
+    """Gestiona las voces de Clonar-voz. Registrar una voz exige constancia de permiso."""
+    import time
+    from pathlib import Path
+
+    from .voice.tts import ClonarVozTTS
+
+    cfg = load_config(args.config)
+    tts = ClonarVozTTS(cfg.voice.get("clonar_voz_url", "http://127.0.0.1:8080"))
+    if args.action == "status":
+        st = tts.status()
+        print(json.dumps({k: st.get(k) for k in ("binario_ok", "version", "soporta_qwen3tts", "modelo_ok", "mmproj_ok", "ffmpeg")}, indent=2))
+    elif args.action == "list":
+        for v in tts.voices():
+            print(f"{v['id']}\t{v.get('nombre')}\t{v.get('duracion')}s")
+    elif args.action == "register":
+        if not (args.file and args.name):
+            sys.exit("Uso: rem voice register --file muestra.wav --name NOMBRE --permission 'quién da el permiso'")
+        if not args.permission or len(args.permission.strip()) < 8:
+            sys.exit("Falta --permission: indica con claridad que la voz es TUYA o que la persona dio permiso explícito "
+                     "(p. ej. 'mi propia voz' o 'María Pérez, autorización por escrito 2026-10-07'). "
+                     "No registro voces de terceros sin permiso.")
+        v = tts.register_voice(Path(args.file), args.name, args.transcript or "")
+        log = cfg.resolve(cfg.data_dir) / "voice_consent.jsonl"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with log.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"voice_id": v["id"], "name": args.name, "permission": args.permission.strip(),
+                                "file": Path(args.file).name, "at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}, ensure_ascii=False) + "\n")
+        print(f"Voz registrada: id={v['id']}. Ponla en config/rem.yaml -> voice.clonar_voz_voice_id")
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(prog="rem")
     ap.add_argument("--config", default=None)
@@ -95,6 +126,12 @@ def main(argv: list[str] | None = None) -> None:
     f.add_argument("action", choices=["list", "enroll", "forget"])
     f.add_argument("name", nargs="?")
     f.add_argument("--consent", action="store_true")
+    v = sub.add_parser("voice", help="Voces de Clonar-voz (con constancia de permiso)")
+    v.add_argument("action", choices=["status", "list", "register"])
+    v.add_argument("--file")
+    v.add_argument("--name")
+    v.add_argument("--transcript", default="")
+    v.add_argument("--permission", default="")
     sub.add_parser("live", help="Micrófono + cámara + llamada por nombre (requiere extras)")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO)
@@ -106,6 +143,8 @@ def main(argv: list[str] | None = None) -> None:
         _read(args)
     elif args.cmd == "faces":
         _faces(args)
+    elif args.cmd == "voice":
+        _voice(args)
     elif args.cmd == "live":
         from .live import run_live
 

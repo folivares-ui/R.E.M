@@ -27,7 +27,7 @@ voice = ["faster-whisper>=1.0", "sounddevice>=0.4", "numpy"]
 tts-local = ["piper-tts"]
 project = ["mpxj"]           # lectura de .mpp (Microsoft Project); requiere Java
 dbs = ["sqlalchemy>=2", "duckdb"]
-dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "fastapi", "python-multipart"]
 
 [project.scripts]
 rem = "rem.cli:main"

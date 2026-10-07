@@ -48,3 +48,32 @@ voice:
 Envía `POST` JSON `{model, input, voice, response_format}` y espera audio en la respuesta (la convención de los endpoints
 "OpenAI-compatible" de voz). **No he probado ningún proveedor real**; solo un servidor local de prueba. Si tu proveedor usa otro
 formato, usa `tts_provider: command` con un script tuyo. Revisa los términos del proveedor sobre voces y datos que envías.
+
+## Clonar-voz (servidor local) como motor de voz
+Integrado el proyecto <https://github.com/jceronch1/Clonar-voz> (MIT, commit fijado en `scripts/bootstrap.sh`):
+síntesis y clonación 100 % local con Qwen3-TTS (GGUF) + llama.cpp y una API HTTP.
+
+```bash
+bash scripts/bootstrap.sh                 # lo deja en vendor/Clonar-voz
+cd vendor/Clonar-voz && ./iniciar.sh      # pide llama.cpp (>= b10500 según su README), ffmpeg y descarga ~1,5 GB de pesos
+# en otra terminal, desde R.E.M:
+rem voice status
+rem voice register --file mi_voz.wav --name "Mi voz" --permission "mi propia voz"
+rem voice list                            # copia el id a config/rem.yaml -> voice.clonar_voz_voice_id
+```
+```yaml
+voice:
+  tts_provider: clonar_voz
+  clonar_voz_url: http://127.0.0.1:8080   # solo local: su API no tiene autenticación
+  clonar_voz_voice_id: "<id>"
+```
+**Permiso obligatorio:** `rem voice register` se niega sin `--permission` (quién da el permiso: tu propia voz, o una persona con
+autorización escrita) y deja constancia en `data/voice_consent.jsonl`. El propio README de Clonar-voz advierte que clonar una voz
+sin permiso es ilegal en muchos países. **Sigo sin procesar la grabación de la actriz de doblaje**: esta herramienta no cambia eso; sirve
+para una voz propia o con consentimiento. Es una constancia declarativa, no una verificación: la responsabilidad es tuya.
+
+**Verificado:** el adaptador contra el `app.py` REAL de Clonar-voz con un `llama-tts` falso (registro de voz multipart, generación, SSE,
+descarga del WAV) y contra un servidor de prueba. **No verificado:** la calidad ni el funcionamiento del modelo Qwen3-TTS real, llama.cpp,
+GPU/CPU, ni el parecido de la voz (no se descargaron los ~1,5 GB de pesos). Los pesos tienen su propia licencia
+(<https://huggingface.co/ggml-org/Qwen3-TTS-12Hz-1.7B-Base-GGUF>); no la he revisado. Las afirmaciones sobre versiones de llama.cpp y
+rendimiento son de su README, no mías.
